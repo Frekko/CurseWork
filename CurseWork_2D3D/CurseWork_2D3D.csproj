@@ -53,7 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CleverDeeps.cs" />
+    <Compile Include="Analizator.cs" />
     <Compile Include="Picture.cs">
       <SubType>Form</SubType>
     </Compile>

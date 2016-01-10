@@ -18,6 +18,7 @@ namespace CurseWork_2D3D
         private Versh _parent;
         private double _maxDist;
         private int _count;
+        public int _z = -1;
 
         // достаём корень какой-либо вершины, кладём его в _parent и возвращаем
         public Versh Root

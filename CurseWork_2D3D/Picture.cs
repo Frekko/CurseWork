@@ -18,11 +18,18 @@ namespace CurseWork_2D3D
             this.Text = settings;
             photo = ph1;
             InitializeComponent();
-            this.Size = new System.Drawing.Size(photo.Width+20, photo.Height+45);
+            try
+            {
+                this.Size = new System.Drawing.Size(photo.Width + 20, photo.Height + 45);
+                pictureBox1.Image = photo;
+                pictureBox1.Size = new Size(photo.Width, photo.Height);
+                pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
+            }
+            catch (Exception e)
+            {
+                
+            }
 
-            pictureBox1.Image = photo;
-            pictureBox1.Size = new Size(photo.Width, photo.Height);
-            pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)

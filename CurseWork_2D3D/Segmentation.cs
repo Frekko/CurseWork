@@ -30,7 +30,7 @@ namespace CurseWork_2D3D
         public Segmentation(Bitmap foto2D)
         {
 
-            limit = MainMenuForm._trueLimit;
+            limit = MainMenuForm._trueSegmLimit;
             segmSize = MainMenuForm._trueSegmSize;
             _width = foto2D.Width;
             _height = foto2D.Height;
@@ -193,7 +193,7 @@ namespace CurseWork_2D3D
             }
             Bitmap end = Filters.GetBitmap(mimimi, _width, _height);
             //////////////////////////////////////////////////////////////////////
-            end = Filters.GrayImage(end);
+            //end = Filters.GrayImage(end);
             //Bitmap zyuzyu = Filters.GetBitmap(_foto, _width, _height);
             //Application.Run(new Form1(zyuzyu, zyu));
             return end;

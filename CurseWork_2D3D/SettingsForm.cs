@@ -13,9 +13,11 @@ namespace CurseWork_2D3D
     public partial class SettingsForm : Form
     {
         private Bitmap _photo;
+        private Bitmap _photoEdge;
         private Bitmap _photoEnd;
         private string settings = "";
-        private double limit;
+        private double segmLimit;
+        private int rangeLimit;
         int segmSize;
         
         public SettingsForm(Bitmap newWork)
@@ -24,12 +26,17 @@ namespace CurseWork_2D3D
             InitializeComponent();
             label1.Text = "Значение лимита свёртки";
             label3.Text = "Порог минимума сегментов";
+            label5.Text = "Лимит перепада яркости границ"; 
             label2.Text = "";
             label4.Text = "";
-            limit = MainMenuForm._trueLimit;
+            label6.Text = "";
+            segmLimit = MainMenuForm._trueSegmLimit;
             segmSize = MainMenuForm._trueSegmSize;
-            textBox1.Text = limit.ToString();
+            rangeLimit = MainMenuForm._trueRangeLimit;
+
+            textBox1.Text = segmLimit.ToString();
             textBox2.Text = segmSize.ToString();
+            textBox3.Text = rangeLimit.ToString();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -45,7 +52,7 @@ namespace CurseWork_2D3D
         {
             try
             {
-                limit = double.Parse(textBox1.Text);
+                segmLimit = double.Parse(textBox1.Text);
                 label2.Text = "";
             }
             catch (FormatException ex)
@@ -66,16 +73,66 @@ namespace CurseWork_2D3D
             if (segmSize == 0)
             {
                 label4.Text = "Не может быть равным 0!";
-                return;
-                
+                return;   
             }
-            int height = _photo.Height;
-            int width = _photo.Width;
 
-            Segmentation seg = new Segmentation(_photo, limit, segmSize);
-            seg.SortRebr();
-            _photoEnd = seg.Segment();
-            settings = "limit = " + limit + "segmSize = " + segmSize;
+            try
+            {
+                rangeLimit = int.Parse(textBox3.Text);
+                label6.Text = "";
+            }
+            catch (FormatException ex)
+            {
+                label6.Text = "Неверный формат, введите int";
+                return;
+            }
+
+            // Если надо отображать и сегментацию, и границы
+            if (checkBox2.Checked && checkBox1.Checked)
+            {
+                Segmentation seg = new Segmentation(_photo, segmLimit, segmSize);
+                seg.SortRebr();
+                _photoEnd = seg.Segment();
+
+                int height = _photo.Height;
+                int width = _photo.Width;
+                // к сегментации добавим обведённые границы
+                Filters filt = new Filters(_photo, rangeLimit);
+                _photoEdge = filt.CannyFilter(_photo);
+                //_photoEdge = filt.Sobel(_photo);
+
+                byte[] segmentByte = Filters.GetBytes(_photoEnd);
+                byte[] edgeByte = Filters.GetBytes(_photoEdge);
+                for (int i = 0; i < segmentByte.Length; i++)
+                {
+                    if (edgeByte[i] == 0)
+                        segmentByte[i] = 0;
+
+                }
+                _photoEnd = Filters.GetBitmap(segmentByte, width, height);
+            }
+            else
+            {
+                // если надо отобразить сегментацию
+                if (checkBox2.Checked)
+                {
+                    Segmentation seg = new Segmentation(_photo, segmLimit, segmSize);
+                    seg.SortRebr();
+                    _photoEnd = seg.Segment();
+                }
+                // Если надо отобразить границы
+                if (checkBox1.Checked)
+                {
+                    int height = _photo.Height;
+                    int width = _photo.Width;
+                   
+                    Filters filt = new Filters(_photo, rangeLimit);
+                    _photoEnd = filt.CannyFilter(_photo);
+                    //_photoEnd = Filters.GrayImage(_photo);
+                }
+            }
+
+            settings = "limit=" + segmLimit + ";segmSize=" + segmSize + ";rangeLimit=" + rangeLimit;
             new Picture(_photoEnd, settings).Show();
         }
 
@@ -88,17 +145,22 @@ namespace CurseWork_2D3D
         // Сохранение настроек для модели
         private void button3_Click(object sender, EventArgs e)
         {
-            MainMenuForm._trueLimit = limit;
+            MainMenuForm._trueSegmLimit = segmLimit;
             MainMenuForm._trueSegmSize = segmSize;
         }
 
         // Сбросить настройки к дефолтным 
         private void button4_Click(object sender, EventArgs e)
         {
-            MainMenuForm._trueLimit = 14;
+            MainMenuForm._trueSegmLimit = 14;
             MainMenuForm._trueSegmSize = 10;
-            textBox1.Text = MainMenuForm._trueLimit.ToString();
+            textBox1.Text = MainMenuForm._trueSegmLimit.ToString();
             textBox2.Text = MainMenuForm._trueSegmSize.ToString();
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
 
 

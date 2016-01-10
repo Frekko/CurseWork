@@ -15,15 +15,19 @@ namespace CurseWork_2D3D
     public partial class MainMenuForm : Form
     {
         public Bitmap newWorkForMe;
+        public Bitmap endWork;
         private bool loadedIt = false;
         private bool madeIt = false;
+        private string fileName;
 
-        public static double _trueLimit;
+        public static double _trueSegmLimit;
+        public static int _trueRangeLimit;
         public static int _trueSegmSize;
         public MainMenuForm()
         {
-            _trueLimit = 14;
+            _trueSegmLimit = 14;
             _trueSegmSize = 10;
+            _trueRangeLimit = 16384;
             InitializeComponent();
         }
 
@@ -47,7 +51,7 @@ namespace CurseWork_2D3D
                 try
                 {
                     newWorkForMe = new Bitmap(openFileDialog1.OpenFile());
-
+                    fileName = openFileDialog1.SafeFileName;
                     ////////////////////////////////////////////////////////////////////////////////////////////
                     //Form3 filtresForm = new Form3(newWorkForMe);
                     //filtresForm.Show();
@@ -74,7 +78,7 @@ namespace CurseWork_2D3D
             }
             else
             {
-                
+             
             }
 
         }
@@ -88,16 +92,22 @@ namespace CurseWork_2D3D
                     ///////////////////////////////////////////////////////////////////
                     // здесь надо начать высчитывание по алгоритмам информации 2д фото
                     ///////////////////////////////////////////////////////////////////
+                    // сегментация
+                    //Segmentation seg = new Segmentation(newWorkForMe);
+                    //seg.SortRebr();
+                    //endWork = seg.Segment();
+                    // после этого v2d точно существует
 
-                    //    newWorkForMe.StartFilters();
-
+                    // анализатор сегментов и поиск их примерного расположения
+                    
 
                     ///////////////////////////////////////////////////////////////////
                     // и преобразование полученных данных в 3д модель
                     ///////////////////////////////////////////////////////////////////
+                    
+                
                 }
-
-                Form1 frm = new Form1();
+                Form1 frm = new Form1(newWorkForMe, fileName);
                 frm.Show();
             }
         }
