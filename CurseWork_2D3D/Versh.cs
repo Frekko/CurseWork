@@ -74,5 +74,31 @@ namespace CurseWork_2D3D
             VershCount += v.VershCount;
             v.Root = this.Root;
         }
+
+//        public override bool Equals(object obj)
+//        {
+//            Versh v = obj as Versh;
+//            if (v == null)
+//                return false;
+//            return _x == v._x && _y == v._y;
+//        }
+
+        public bool isBorderVersh(int height, int width)
+        {
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    if (i == 0 && j == 0)
+                        continue;
+                    if (_x + i < 0 || _x + i >= height || _y + j < 0 || _y + j >= width)
+                        return true;
+                    //если мы сюда пришли, то мы знаем, что соседний к нашему пиксель внутри картинки
+                    if (Segmentation.v2d[_x + i, _y + j].Root != Root)
+                        return true;
+                }
+            }
+            return false;
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace CurseWork_2D3D
             glWind.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT); // чистим цвета и глубины
             glWind.LoadIdentity(); // сброс системы координат к начальной позиции
 
-            glWind.Translate(0.0f, 0.0f, -10.0f); // по сути двигаем перо, которым рисуем (f - float)
+            glWind.Translate(0.0f, 0.0f, -1000.0f); // по сути двигаем перо, которым рисуем (f - float)
             glWind.Rotate(rtri, 0, 1, 0); // вращение системы координат (угол поворота, координаты вектора вращения)
 
 //            texture.Bind(glWind);
@@ -120,10 +120,10 @@ namespace CurseWork_2D3D
             List<Versh> EndedRoots = new List<Versh>();
             bool alreadyDone = false;
 
-            Analizator anal = new Analizator(_photo);
-            Versh Ground = anal.FindGround();
+            Analizator analizator = new Analizator(_photo);
+            List<Versh> Ground = analizator.FindGround();
 
-            Set3DPoligon(Ground.VershCount, glWind, Ground);
+            Set3DPoligon(Ground, glWind);
 
 //            for (int i = 0; i < _width; i++)
 //            {
@@ -145,30 +145,18 @@ namespace CurseWork_2D3D
 //            }
         }
 
-        public void Set3DPoligon(int kol, OpenGL glWind, Versh rootSegm)
+        public void Set3DPoligon(List<Versh> borderList, OpenGL glWind)
         {
             glWind.Begin(OpenGL.GL_POLYGON); // начинаем отрисовывать
             glWind.Color(1.0f, 1.0f, 1.0f); // задаём цвет в RGB
-            float z = -10;
+            float z = -1000;
             texture.Bind(glWind);
             int shtuchka = 0;
             bool shtuchkaBool = false;
-            for (int x = 0; x < _height; x++)
+            foreach (Versh versh in borderList)
             {
-                for (int y = 0; y < _width; y++)
-                {
-                    if (Segmentation.v2d[x, y].Root == rootSegm)
-                    {
-                        glWind.TexCoord(1.0 / _height * x, 1.0 / _width * y);
-                        glWind.Vertex(z - (Segmentation.v2d[x, y]._z), (float)y - srWidth, (float)x - srHeight ); // задаём вершину
-                        shtuchkaBool = true;
-                    }
-                }
-                if (shtuchkaBool == true)
-                {
-                    shtuchka++;
-                    shtuchkaBool = false;
-                }
+                glWind.TexCoord(1.0 / _height * versh._x, 1.0 / _width * versh._y);
+                glWind.Vertex((float)versh._x - srHeight, (float)versh._y - srWidth, (float)versh._z); // задаём вершину
             }
 //            for (int i = 0; i < kol; i++) // количество углов, для автоматизации отрисовки 
 //            {

@@ -55,7 +55,7 @@ namespace CurseWork_2D3D
                 segmLimit = double.Parse(textBox1.Text);
                 label2.Text = "";
             }
-            catch (FormatException ex)
+            catch (FormatException)
             {
                 label2.Text = "Неверный формат, введите double";
                 return;
@@ -65,7 +65,7 @@ namespace CurseWork_2D3D
                 segmSize = int.Parse(textBox2.Text);
                 label4.Text = "";
             }
-            catch (FormatException ex)
+            catch (FormatException)
             {
                 label4.Text = "Неверный формат, введите int";
                 return;
@@ -81,7 +81,7 @@ namespace CurseWork_2D3D
                 rangeLimit = int.Parse(textBox3.Text);
                 label6.Text = "";
             }
-            catch (FormatException ex)
+            catch (FormatException)
             {
                 label6.Text = "Неверный формат, введите int";
                 return;

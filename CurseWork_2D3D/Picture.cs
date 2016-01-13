@@ -25,7 +25,7 @@ namespace CurseWork_2D3D
                 pictureBox1.Size = new Size(photo.Width, photo.Height);
                 pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 
             }
