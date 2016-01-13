@@ -24,47 +24,122 @@ namespace CurseWork_2D3D
             _v2d = Segmentation.v2d;
         }
 
-        // Находим поверхность ("землю") 3д модели, а также максимальное количество слоёв
-        public List<Versh> FindGround()
+        public List<AreaContainer> FormAreas()
         {
-            int lastY = _height-1;
-            // Найдём самый большой сегмент, который касается нижнего края
-            Versh Ground = FindLargeSegment(lastY);
-            
-            // Найдём его самую дальнюю вершину, чтобы вычислить его длину
-            bool findFirst = false;
-            int firstRow = 0;
-            int firstColumn = 0;
-            int y = 0;
-            while (findFirst == false && y < _height)
+            List<AreaContainer> result = new List<AreaContainer>();
+            if (_v2d == null)
             {
-                for (int x = 0; x < _width; x++)
-                {
-                    if (_v2d[y, x].Root == Ground.Root)
-                    {
-                        findFirst = true;
-                        firstRow = y;
-                        firstColumn = x; // для нахождения границ пока что
-                        break;
-                    }
-                }
-                y++;
+                Segmentation segm = new Segmentation(_photo);
+                segm.Segment();
+                _v2d = Segmentation.v2d; //полученный битмап нам неинтересен, только массив
             }
-            // Зная длину земли, можно задать максимальное количество слоёв изображения
-            int kolZ = _height - firstRow;
-            zCoordinates = new int[kolZ];
-
-            int[,] steps = {{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1}};
-
+            AreaContainer currentArea = new AreaContainer();
+            //сначала ищем землю
+            Versh ground = FindLargeSegment(_height-1);
+            int pixelRow = 0;
+            int pixelColumn = 0;
             for (int i = 0; i < _width; i++)
             {
-                if (_v2d[_height - 1, i].Root == Ground.Root)
+                if (_v2d[_height - 1, i].Root == ground.Root)
                 {
-                    firstRow = _height - 1;
-                    firstColumn = i;
+                    pixelRow = _height - 1;
+                    pixelColumn = i;
                     break;
                 }
             }
+            //формируем границу земли
+            currentArea.Borders = FindBorder(pixelRow, pixelColumn);
+            //формируем всю область земли
+            currentArea.Area = FormSingleArea(pixelRow, pixelColumn);
+            //добавляем землю в список областей - у неё будет индекс 0
+            result.Add(currentArea);
+
+            //потом найдём небо
+            currentArea = new AreaContainer();
+            Versh sky = FindLargeSegment(0);
+            pixelRow = 0;
+            pixelColumn = 0;
+            for (int i = 0; i < _width; i++)
+            {
+                if (_v2d[0, i].Root == sky.Root)
+                {
+                    pixelRow = 0;
+                    pixelColumn = i;
+                    break;
+                }
+            }
+            //формируем границу земли
+            currentArea.Borders = FindBorder(pixelRow, pixelColumn);
+            //формируем всю область земли
+            currentArea.Area = FormSingleArea(pixelRow, pixelColumn);
+            //добавляем небо в список областей - у него будет индекс 1
+            result.Add(currentArea);
+
+            //а теперь, дамы и господа, добавляем всё остальное
+            for (int row = 0; row < _height; row++)
+            {
+                for (int column = 0; column < _width; column++)
+                {
+                    bool alreadyDone = false;
+                    foreach (AreaContainer areaContainer in result)
+                    {
+                        if (_v2d[row, column].Root == areaContainer.Area[0].Root)
+                        {
+                            if (areaContainer.Area.Contains(_v2d[row, column]))
+                            {
+                                alreadyDone = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (alreadyDone == false)
+                    {
+                        currentArea = new AreaContainer();
+                        currentArea.Borders = FindBorder(row, column);
+                        currentArea.Area = FormSingleArea(row, column);
+                        result.Add(currentArea);
+                    }
+                }
+            }
+            throw new NotImplementedException();
+        }
+
+        private List<Versh> FormSingleArea(int pixelRow, int pixelColumn)
+        {
+            List<Versh> result = new List<Versh>();
+            int[,] steps = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+
+            //добавили в область первый (данный) пиксель
+            result.Add(_v2d[pixelRow, pixelColumn]);
+
+            for (int i = 0; i < result.Count; i++)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    int testRow = pixelRow + steps[k, 1];
+                    int testColumn = pixelColumn + steps[k, 0];
+                    if (testRow < 0 || testRow >= _height || testColumn < 0 ||
+                        testColumn >= _width)
+                        continue;
+
+                    if (_v2d[testRow, testColumn].Root == result[0].Root && _v2d[testRow, testColumn].isBorderVersh(_height, _width)
+                        && result.Contains(_v2d[testRow,testColumn]) == false)
+                    {
+                        result.Add(_v2d[testRow,testColumn]);
+                    }
+                }
+            }
+            return result;
+        }
+
+        // Находим поверхность ("землю") 3д модели, а также максимальное количество слоёв
+        public List<Versh> FindBorder(int firstRow, int firstColumn)
+        {
+            while (_v2d[firstRow, firstColumn].isBorderVersh(_height, _width) == false)
+                firstRow--;
+
+            int[,] steps = {{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1}};
+
             List<Versh> borders = new List<Versh>();
             List<Versh> trash = new List<Versh>();
             borders.Add(_v2d[firstRow, firstColumn]);
@@ -86,10 +161,9 @@ namespace CurseWork_2D3D
                 }
             }
 
-            bool foundNext;
             while (current != first)
             {
-                foundNext = false;
+                bool foundNext = false;
                 int currentRow = current._x;
                 int currentColumn = current._y;
                 for (int k = 0; k < 8; k++)
@@ -98,10 +172,6 @@ namespace CurseWork_2D3D
                     int newColumn = currentColumn + steps[k, 1];
                     if (newRow == first._x && newColumn == first._y)
                     {
-                        foreach (Versh border in borders)
-                        {
-                            border._z = border._y; // - _height;
-                        }
                         return borders;
                     }
                     if (newColumn < 0 || newColumn >= _width || newRow < 0 ||
@@ -137,10 +207,6 @@ namespace CurseWork_2D3D
 //                        _v2d[k, x]._z = range;
 //                }
 //            }
-            foreach (Versh border in borders)
-            {
-                border._z = border._y;// - _height;
-            }
             return borders;
         }
 

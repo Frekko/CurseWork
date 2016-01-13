@@ -27,12 +27,18 @@ namespace CurseWork_2D3D
         // середина модели для отрисовки
         private float srHeight;
         private float srWidth;
+        private bool haveData;
+
+        private AreaContainer ground;
+        private AreaContainer sky;
+        private List<AreaContainer> areaContainers;
         public Form1(Bitmap photo, string name)
         {
             _photo = photo;
             _height = _photo.Height;
             _width = _photo.Width;
             _fileName = name;
+            haveData = false;
             InitializeComponent();
             
             // середина модели для отрисовки
@@ -52,7 +58,6 @@ namespace CurseWork_2D3D
             //надо накладывать 3д текстуру!
             //glWind.Enable(OpenGL.GL_TEXTURE_2D);
             //texture.Create(glWind, "testFoto2.jpg");
-
 
             glWind.Enable(OpenGL.GL_TEXTURE_2D);
             texture.Create(glWind, _fileName/*"testFoto10.jpg"*/); // задаём текстуру
@@ -121,7 +126,13 @@ namespace CurseWork_2D3D
             bool alreadyDone = false;
 
             Analizator analizator = new Analizator(_photo);
-            List<Versh> Ground = analizator.FindGround();
+//            List<Versh> Ground = analizator.FindGround();
+
+            if (haveData == false)
+            {
+                areaContainers = analizator.FormAreas();
+                haveData = true;
+            }
 
             Set3DPoligon(Ground, glWind);
 
