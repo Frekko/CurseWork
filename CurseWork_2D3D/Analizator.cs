@@ -100,7 +100,7 @@ namespace CurseWork_2D3D
                     {
                         foreach (Versh border in borders)
                         {
-                            border._z = border._y - _height;
+                            border._z = border._y; // - _height;
                         }
                         return borders;
                     }
@@ -139,7 +139,7 @@ namespace CurseWork_2D3D
 //            }
             foreach (Versh border in borders)
             {
-                border._z = border._y - _height;
+                border._z = border._y;// - _height;
             }
             return borders;
         }

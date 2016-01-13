@@ -25,8 +25,8 @@ namespace CurseWork_2D3D
         private int _height;
         private int _width;
         // середина модели для отрисовки
-        private int srHeight;
-        private int srWidth;
+        private float srHeight;
+        private float srWidth;
         public Form1(Bitmap photo, string name)
         {
             _photo = photo;
@@ -60,7 +60,7 @@ namespace CurseWork_2D3D
             glWind.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT); // чистим цвета и глубины
             glWind.LoadIdentity(); // сброс системы координат к начальной позиции
 
-            glWind.Translate(0.0f, 0.0f, -1000.0f); // по сути двигаем перо, которым рисуем (f - float)
+            glWind.Translate(0.0f, 0.0f, -10.0f); // по сути двигаем перо, которым рисуем (f - float)
             glWind.Rotate(rtri, 0, 1, 0); // вращение системы координат (угол поворота, координаты вектора вращения)
 
 //            texture.Bind(glWind);
@@ -155,8 +155,10 @@ namespace CurseWork_2D3D
             bool shtuchkaBool = false;
             foreach (Versh versh in borderList)
             {
-                glWind.TexCoord(1.0 / _height * versh._x, 1.0 / _width * versh._y);
-                glWind.Vertex((float)versh._x - srHeight, (float)versh._y - srWidth, (float)versh._z); // задаём вершину
+                glWind.TexCoord(1.0 / _width * (versh._y - (1f / _width * srHeight)), 1.0 /_height*(versh._x - (1f/_height*srWidth)));
+                glWind.Vertex((float) 1/_width*(versh._y - (1f/_width*srHeight)),
+                    (float)-1 / _height * (versh._x - (1f / _height * srWidth)), (float)1 / _width * (versh._z - (1f / _width * srHeight)));
+                    //1f/20*(float)versh._z); // задаём вершину
             }
 //            for (int i = 0; i < kol; i++) // количество углов, для автоматизации отрисовки 
 //            {
