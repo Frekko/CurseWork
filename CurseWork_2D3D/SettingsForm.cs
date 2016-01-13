@@ -98,7 +98,7 @@ namespace CurseWork_2D3D
                 int width = _photo.Width;
                 // к сегментации добавим обведённые границы
                 Filters filt = new Filters(_photo, rangeLimit);
-                _photoEdge = filt.CannyFilter(_photo);
+                _photoEdge = filt.SobelCanny(_photo);
                 //_photoEdge = filt.Sobel(_photo);
 
                 byte[] segmentByte = Filters.GetBytes(_photoEnd);
@@ -127,7 +127,7 @@ namespace CurseWork_2D3D
                     int width = _photo.Width;
                    
                     Filters filt = new Filters(_photo, rangeLimit);
-                    _photoEnd = filt.CannyFilter(_photo);
+                    _photoEnd = filt.SobelCanny(_photo);
                     //_photoEnd = Filters.GrayImage(_photo);
                 }
             }

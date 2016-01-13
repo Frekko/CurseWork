@@ -23,43 +23,63 @@ namespace CurseWork_2D3D
         }
 
         // Находим поверхность ("землю") 3д модели, а также максимальное количество слоёв
-        public void FindGround()
+        public Versh FindGround()
         {
-            int lastY = _width - 1;
+            int lastY = _height-1;
             // Найдём самый большой сегмент, который касается нижнего края
             Versh Ground = FindLargeSegment(lastY);
             
             // Найдём его самую дальнюю вершину, чтобы вычислить его длину
             bool findFirst = false;
             int firstY = 0;
+            int firstX = 0;
             int y = 0;
-            while (findFirst == false || y >= _width)
+            while (findFirst == false && y < _height)
             {
-                for (int x = 0; x < _height; x++)
+                for (int x = 0; x < _width; x++)
                 {
-                    if (_v2d[x, y].Root == Ground.Root)
+                    if (_v2d[y, x].Root == Ground)
                     {
                         findFirst = true;
                         firstY = y;
+                        firstX = x; // для нахождения границ пока что
                         break;
                     }
                 }
                 y++;
             }
             // Зная длину земли, можно задать максимальное количество слоёв изображения
-            int kolZ = _width - firstY;
+            int kolZ = _height - firstY;
             zCoordinates = new int[kolZ];
 
-            // Создадим землю 3д модели
-            for (int k = lastY, range = 0; k >= firstY; k--, range++)
+            List<Versh> Borders;
+            int[,] steps = {{0,1},{-1,0},{0,-1},{1,0}};
+            int i = firstY;
+            int j = firstX;
+            Versh ourRoot = _v2d[firstY, firstX].Root;
+            do
             {
-                for (int x = 0; x < _height; x++)
+                for (int k = 0; k < 4; k++)
                 {
-                    // Оптимизировать?? 
-                    if (_v2d[x, y].Root == Ground.Root)
-                        _v2d[x, y]._z = range;
+                    if (ourRoot == _v2d[i + steps[k, 0], j + steps[0, 1]].Root)
+                    {
+                        
+                    }
                 }
-            }
+
+            } while (_v2d[i,j] != _v2d[firstY, firstX]);
+
+//            // Создадим землю 3д модели
+//            for (int k = lastY, range = 0; k >= firstY; k--, range++)
+//            {
+//                for (int x = 0; x < _width; x++)
+//                {
+//                    // Оптимизировать?? 
+//                    if (_v2d[k, x].Root == Ground.Root)
+//                        _v2d[k, x]._z = range;
+//                }
+//            }
+            return Ground.Root;
         }
 
         // Нахождение заднего фона изображения
@@ -81,13 +101,13 @@ namespace CurseWork_2D3D
         public Versh FindLargeSegment(int range)
         {
             int max = 1;
-            Versh maxSegm = _v2d[0, range];
-            for (int x = 0; x < _height; x++)
+            Versh maxSegm = _v2d[range, 0];
+            for (int x = 0; x < _width; x++)
             {
-                if (_v2d[x, range].VershCount > max)
+                if (_v2d[range, x].VershCount > max)
                 {
-                    max = _v2d[x, range].VershCount;
-                    maxSegm = _v2d[x, range];
+                    max = _v2d[range, x].VershCount;
+                    maxSegm = _v2d[range, x];
                 }
             }
             return maxSegm;
