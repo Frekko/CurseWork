@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace CurseWork_2D3D
 {
-    public class AreaContainer
+    class DrawingVertex
     {
-        //границы области
-        public List<Versh> Borders = new List<Versh>();
+        public float x;
+        public float y;
+        public float z;
+        public float textx;
+        public float texty;
     }
 }

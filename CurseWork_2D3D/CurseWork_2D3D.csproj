@@ -87,6 +87,7 @@
     <Compile Include="Rib.cs" />
     <Compile Include="Segmentation.cs" />
     <Compile Include="Versh.cs" />
+    <Compile Include="DrawingVertex.cs" />
     <EmbeddedResource Include="3dModelForm.resx">
       <DependentUpon>3dModelForm.cs</DependentUpon>
     </EmbeddedResource>
