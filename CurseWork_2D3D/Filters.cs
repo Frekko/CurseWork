@@ -16,9 +16,11 @@ namespace CurseWork_2D3D
         private int height;
         private int width;
         public Bitmap _Photo;
-        //private byte[] DlBytes;
-        //private byte[] AtanBytes;
         private int limit;
+
+        // для Кэнни
+        private byte[] DlBytes;
+        private byte[] AtanBytes;
 
 
         public Filters(Bitmap Photo2D)
@@ -182,15 +184,21 @@ namespace CurseWork_2D3D
         }
 
         // Фильтр Гаусса
-        private void Gauss()
+        private Bitmap Gauss(Bitmap ourPhoto)
         {
 
             // Использует определенные значения свёртки 
+            double[,] kernel = { { 0, 1, 0 }, { 1, 4, 1 }, { 0, 1, 0 } };
+            ourPhoto = Svertka(ourPhoto, ourPhoto.Height, ourPhoto.Width, kernel);
+            
+            // Ещё возможный вариант
+            // double[,] kernel = { { 1, 2, 1 }, { 2, 4, 2 }, { 1, 2, 1 } };
+
             // Всё домножено на 3, т.к. смотрим по 3-ём палитрам сразу'
-            double[,] kernelX = { { -3, 0, 3 }, { -6, 0, 6 }, { -3, 0, 3 } };
-            double[,] kernelY = { { -3, -6, -3 }, { 0, 0, 0}, { 3, 6, 3 } };
+            //double[,] kernelX = { { -3, 0, 3 }, { -6, 0, 6 }, { -3, 0, 3 } };
+            //double[,] kernelY = { { -3, -6, -3 }, { 0, 0, 0}, { 3, 6, 3 } };
             //Bitmap fotoAfterSvertka = Svertka(_foto, height, width, kernelY);      
-        
+            return ourPhoto;
         }
 
         // Собель
@@ -201,8 +209,8 @@ namespace CurseWork_2D3D
             int height = photo.Height;
 
             // избавимся от шумов Гауссом
-            double[,] kernel = { { 0, 1, 0 }, { 1, 4, 1 }, { 0, 1, 0 } };
-            photo = Svertka(photo, height, width, kernel);
+            //double[,] kernel = { { 0, 1, 0 }, { 1, 4, 1 }, { 0, 1, 0 } };
+            photo = Gauss(photo);
 
             // Оператор Собеля
             double[,] kernelX = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
@@ -248,7 +256,7 @@ namespace CurseWork_2D3D
                     sumKernelx = 0;
                     sumKernely = 0;
 
-                    // проходим по ядру
+                    // проходим по ядру (по горизонтали)
                     for (int i = 0; i < kernelWidth; i++)
                     {
                         for (int j = 0; j < kernelHeight; j++)
@@ -277,7 +285,7 @@ namespace CurseWork_2D3D
                         }
                     }
 
-                    // проходим по ядру
+                    // проходим по ядру (по вертикали)
                     for (int j = 0; j < kernelHeight; j++)
                     {
                         for (int i = 0; i < kernelWidth; i++)
@@ -306,7 +314,7 @@ namespace CurseWork_2D3D
                     }
 
                     
-                    // Лайтовая версия Кэнни - вводим настраиваемый лимит
+                    // Лайтовая версия КэнниСобеля - вводим настраиваемый лимит
 
                     if (sumRx*sumRx + sumRy*sumRy > limit || sumGx*sumGx + sumGy*sumGy > limit ||
                         sumBx*sumBx + sumBy*sumBy > limit)
@@ -323,7 +331,7 @@ namespace CurseWork_2D3D
                     }
 
                     /*
-                    // чуть более расширенные данные для Кэнни, мб реализуется потом
+                    // чуть более расширенные данные для Кэнни, пока не надо
                     outputBytes[3 * (width * y + x)] = (byte)Math.Sqrt(sumGx * sumGx + sumGy * sumGy);
                     outputBytes[3 * (width * y + x) + 1] = (byte)Math.Sqrt(sumGx * sumGx + sumGy * sumGy);
                     outputBytes[3 * (width * y + x) + 2] = (byte)Math.Sqrt(sumBx * sumBx + sumBy * sumBy);
@@ -342,118 +350,118 @@ namespace CurseWork_2D3D
         }
         
         
-        // Алгоритм Кэнни (Canny)
-//        public Bitmap CannyFilter(Bitmap photo)
-//        {
-//            Bitmap photoForCanny = photo;
-//            byte[] photoBytes = GetBytes(photo);
-//
-//            byte[] atans = {0, 45, 90, 135};
-//            // избавимся от шумов фильтром Гаусса
-//            //double[,] kernel = { { 0, 1, 0 }, { 1, 4, 1 }, { 0, 1, 0 } };
-//            //photo = Svertka(photo, height, width, kernel);
-//            // Обрабатывает 
-//            photoForCanny = Filters.GrayImage(photoForCanny);
-//            SobelCanny(photoForCanny);
-//
-//            
-//            // Считаем максимальные перепады яркости и берём соответствующие углы
-//            for (int i = 0; i < DlBytes.Length; i++)
-//            {
-//                /*
-//                int max = 0;
-//                // тут смотрим, по какой палитре максимальный перепад
-//                for (int j = 0; j < 3; j ++)
-//                {
-//                    if (DlBytes[i + j] > DlBytes[i + max])
-//                        max = j;
-//                }
-//                */
-//                
-//                // дальше надо найти к какому углу из 4-ёх соответствующий угол ближе
-//                int minDif = Math.Abs(AtanBytes[i] - atans[0]);
-//                int numberAtan = 0;
-//                for (int numb = 1; numb < 4; numb++)
-//                {
-//                    // Упростить?? Лишнее вычисление?
-//                    if (minDif > Math.Abs(AtanBytes[i] - atans[numb]))
-//                    {
-//                        minDif = Math.Abs(AtanBytes[i] - atans[numb]);
-//                        numberAtan = numb;
-//                    }
-//                }
-//                //AtanMass[i] = atans[numberAtan];
-//                AtanBytes[i] = atans[numberAtan];
-//                //DlBytes[i] = DlBytes[i];
-//                // ???????? 
-//                //AtanBytes[i+1] = (byte)atans[numberAtan];
-//                //AtanBytes[i+2] = (byte)atans[numberAtan];
-//            }
-//
-//            int sizeStr = height*3;
-//            byte[] endBytes = new byte[width*height*3];
-//            int pixelNumb = height+1;
-//            // Строим границы
-//            for (int j = 1; j < width-1; j++)
-//            {
-//                for (int y = 3; y < sizeStr-3; y+=3)
-//                {
-//                    int x = j*sizeStr;
-//                    // если угол направления градиента равен нулю, точка будет считаться границей, если её интенсивность больше чем у точки выше и ниже рассматриваемой точки
-//                    if (AtanBytes[pixelNumb] == 0)
-//                    {
-//                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - height] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + height])
-//                        {
-//                            endBytes[x + y] = 255;
-//                            endBytes[x + y + 1] = 255;
-//                            endBytes[x + y + 2] = 255;
-//                        }
-//
-//                    }
-//                    // если угол направления градиента равен 90 градусам, точка будет считаться границей, если её интенсивность больше чем у точки слева и справа рассматриваемой точки
-//                    if (AtanBytes[pixelNumb] == 90)
-//                    {
-//                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - 1] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + 1])
-//                        {
-//                            endBytes[x + y] = 255;
-//                            endBytes[x + y + 1] = 255;
-//                            endBytes[x + y + 2] = 255;
-//                        }
-//
-//                    }
-//                    // если угол направления градиента равен 45 градусам, точка будет считаться границей, если её интенсивность больше чем у точек находящихся в верхнем правом и нижнем левом углу от рассматриваемой точки 
-//                    if (AtanBytes[pixelNumb] == 45)
-//                    {
-//                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - height + 1] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + height - 1])
-//                        {
-//                            endBytes[x + y] = 255;
-//                            endBytes[x + y + 1] = 255;
-//                            endBytes[x + y + 2] = 255;
-//                        }
-//
-//                    }
-//                    // если угол направления градиента равен 135 градусам, точка будет считаться границей, если её интенсивность больше чем у точек находящихся в верхнем левом и нижнем правом углу от рассматриваемой точки
-//                    if (AtanBytes[pixelNumb] == 135)
-//                    {
-//                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - height - 1] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + height + 1])
-//                        {
-//                            endBytes[x + y] = 255;
-//                            endBytes[x + y + 1] = 255;
-//                            endBytes[x + y + 2] = 255;
-//                        }
-//                    }
-//                    pixelNumb++;
-//                }
-//            }
-//            /*
-//            for (int b = 0; b < endBytes.Length; b++)
-//            {
-//                if (endBytes[b] != 255)
-//                    endBytes[b] = 0;
-//            }*/
-//            return GetBitmap(endBytes, photo.Width, photo.Height);
-//        }
-        
+        //Алгоритм Кэнни  (Canny)
+        public Bitmap CannyFilter(Bitmap photo)
+        {
+            Bitmap photoForCanny = photo;
+            byte[] photoBytes = GetBytes(photo);
+
+            byte[] atans = {0, 45, 90, 135};
+            // избавимся от шумов фильтром Гаусса
+            //double[,] kernel = { { 0, 1, 0 }, { 1, 4, 1 }, { 0, 1, 0 } };
+            //photo = Svertka(photo, height, width, kernel);
+            // Обрабатывает 
+            photoForCanny = Filters.GrayImage(photoForCanny);
+            SobelCanny(photoForCanny);
+
+            
+            // Считаем максимальные перепады яркости и берём соответствующие углы
+            for (int i = 0; i < DlBytes.Length; i++)
+            {
+                /*
+                int max = 0;
+                // тут смотрим, по какой палитре максимальный перепад
+                for (int j = 0; j < 3; j ++)
+                {
+                    if (DlBytes[i + j] > DlBytes[i + max])
+                        max = j;
+                }
+                */
+                
+                // дальше надо найти к какому углу из 4-ёх соответствующий угол ближе
+                int minDif = Math.Abs(AtanBytes[i] - atans[0]);
+                int numberAtan = 0;
+                for (int numb = 1; numb < 4; numb++)
+                {
+                    // Упростить?? Лишнее вычисление?
+                    if (minDif > Math.Abs(AtanBytes[i] - atans[numb]))
+                    {
+                        minDif = Math.Abs(AtanBytes[i] - atans[numb]);
+                        numberAtan = numb;
+                    }
+                }
+                //AtanMass[i] = atans[numberAtan];
+                AtanBytes[i] = atans[numberAtan];
+                //DlBytes[i] = DlBytes[i];
+                // ???????? 
+                //AtanBytes[i+1] = (byte)atans[numberAtan];
+                //AtanBytes[i+2] = (byte)atans[numberAtan];
+            }
+
+            int sizeStr = height*3;
+            byte[] endBytes = new byte[width*height*3];
+            int pixelNumb = height+1;
+            // Строим границы
+            for (int j = 1; j < width-1; j++)
+            {
+                for (int y = 3; y < sizeStr-3; y+=3)
+                {
+                    int x = j*sizeStr;
+                    // если угол направления градиента равен нулю, точка будет считаться границей, если её интенсивность больше чем у точки выше и ниже рассматриваемой точки
+                    if (AtanBytes[pixelNumb] == 0)
+                    {
+                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - height] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + height])
+                        {
+                            endBytes[x + y] = 255;
+                            endBytes[x + y + 1] = 255;
+                            endBytes[x + y + 2] = 255;
+                        }
+
+                    }
+                    // если угол направления градиента равен 90 градусам, точка будет считаться границей, если её интенсивность больше чем у точки слева и справа рассматриваемой точки
+                    if (AtanBytes[pixelNumb] == 90)
+                    {
+                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - 1] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + 1])
+                        {
+                            endBytes[x + y] = 255;
+                            endBytes[x + y + 1] = 255;
+                            endBytes[x + y + 2] = 255;
+                        }
+
+                    }
+                    // если угол направления градиента равен 45 градусам, точка будет считаться границей, если её интенсивность больше чем у точек находящихся в верхнем правом и нижнем левом углу от рассматриваемой точки 
+                    if (AtanBytes[pixelNumb] == 45)
+                    {
+                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - height + 1] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + height - 1])
+                        {
+                            endBytes[x + y] = 255;
+                            endBytes[x + y + 1] = 255;
+                            endBytes[x + y + 2] = 255;
+                        }
+
+                    }
+                    // если угол направления градиента равен 135 градусам, точка будет считаться границей, если её интенсивность больше чем у точек находящихся в верхнем левом и нижнем правом углу от рассматриваемой точки
+                    if (AtanBytes[pixelNumb] == 135)
+                    {
+                        if (DlBytes[pixelNumb] >= DlBytes[pixelNumb - height - 1] && DlBytes[pixelNumb] >= DlBytes[pixelNumb + height + 1])
+                        {
+                            endBytes[x + y] = 255;
+                            endBytes[x + y + 1] = 255;
+                            endBytes[x + y + 2] = 255;
+                        }
+                    }
+                    pixelNumb++;
+                }
+            }
+            /*
+            for (int b = 0; b < endBytes.Length; b++)
+            {
+                if (endBytes[b] != 255)
+                    endBytes[b] = 0;
+            }*/
+            return GetBitmap(endBytes, photo.Width, photo.Height);
+        }
+        // Дополнительные реализованные функции, которые в последствии были заменены на более оптимальные        
         /*
         // получаем цветовую карту нашей фотографии и обратно
         private Color ColorMap()

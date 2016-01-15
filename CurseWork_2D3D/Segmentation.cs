@@ -15,7 +15,7 @@ namespace CurseWork_2D3D
     {
         private int _width;
         private int _height;
-        private byte[] _foto;
+        private byte[] _photo;
         public double limit;
         public int segmSize;
         List<Versh> versh;
@@ -27,37 +27,37 @@ namespace CurseWork_2D3D
         private byte[,] g;
         private byte[,] b;
 
-        public Segmentation(Bitmap foto2D)
+        public Segmentation(Bitmap photo2D)
         {
 
             limit = MainMenuForm._trueSegmLimit;
             segmSize = MainMenuForm._trueSegmSize;
-            _width = foto2D.Width;
-            _height = foto2D.Height;
+            _width = photo2D.Width;
+            _height = photo2D.Height;
             versh = new List<Versh>(_width * _height);
             ribs = new List<Rib>(_width * _height * 6);
             smallRibs = new List<Rib>(_width * _height);
-            _foto = Filters.GetBytes(foto2D);
+            _photo = Filters.GetBytes(photo2D);
             r = new byte[_height, _width];
             g = new byte[_height, _width];
             b = new byte[_height, _width];
         }
-        public Segmentation(Bitmap foto2D, double limit, int segmSize)
+        public Segmentation(Bitmap photo2D, double limit, int segmSize)
         {
             
             this.limit = limit;
             this.segmSize = segmSize;
-            _width = foto2D.Width;
-            _height = foto2D.Height;
+            _width = photo2D.Width;
+            _height = photo2D.Height;
             versh = new List<Versh>(_width * _height);
             ribs = new List<Rib>(_width * _height * 6);
             smallRibs = new List<Rib>(_width * _height);
-            _foto = Filters.GetBytes(foto2D);
+            _photo = Filters.GetBytes(photo2D);
             r = new byte[_height, _width];
             g = new byte[_height, _width];
             b = new byte[_height, _width];
         }
-
+         
         public void SortRebr()
         {
             int index = 0;
@@ -65,9 +65,9 @@ namespace CurseWork_2D3D
             {
                 for (int j = 0; j < _width; j++)
                 {
-                    r[i, j] = _foto[index++];
-                    g[i, j] = _foto[index++];
-                    b[i, j] = _foto[index++];
+                    r[i, j] = _photo[index++];
+                    g[i, j] = _photo[index++];
+                    b[i, j] = _photo[index++];
                 }
             }
             v2d = new Versh[_height, _width];
@@ -180,7 +180,7 @@ namespace CurseWork_2D3D
 
             ///////////////////////////////////////////////////////////////////////////////
             // Красим сегменты в зависимости от цвета корней
-            byte[] mimimi = new byte[_foto.Length];
+            byte[] mimimi = new byte[_photo.Length];
             int index = 0;
             for (int i = 0; i < _height; i++)
             {
@@ -199,7 +199,7 @@ namespace CurseWork_2D3D
             return end;
             //new Form1(zyuzyu, end).Show();
         }
-
+        // очень умная шикарная штука, но она осложнила программу и добавила неточностей(
         private void MergeSegments()
         {
             //теперь объединяем уже существующие сегменты по какой-то хитрой формуле - МАГИЯ
@@ -234,6 +234,7 @@ namespace CurseWork_2D3D
             }
 
         }
+        // принадлежит методу сверху, ищет самый больший перепад в сегменте
         private static void GetMaxDist(Versh root)
         {
             for (int i = ribs.Count - 1; i >= 0; i--)
@@ -247,6 +248,8 @@ namespace CurseWork_2D3D
                 }
             }
         }
+       
+        // проходим второй раз либо по всем рёбрам, лбо по маленьким (реализовано два варианта)
         private void RemoveSmallSegments()
         {
             int[,] rebr = { { 0, 1 }, { 1, 0 } };

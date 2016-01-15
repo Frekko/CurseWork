@@ -18,6 +18,7 @@ namespace CurseWork_2D3D
         public Versh[,] _v2d;
         public int[] zCoordinates;
         private bool[,] visited;
+        public static bool iStarted = false;
 
         public Analizator(Bitmap photo)
         {
@@ -37,11 +38,14 @@ namespace CurseWork_2D3D
             if (_v2d == null)
             {
                 Segmentation segm = new Segmentation(_photo);
+                segm.SortRebr();
                 segm.Segment();
-                _v2d = Segmentation.v2d; //полученный битмап нам неинтересен, только массив
+                _v2d = Segmentation.v2d; //Полученный битмап нам неинтересен, только массив
             }
+
             AreaContainer currentArea = new AreaContainer();
-            //сначала ищем землю
+            // Сначала ищем землю
+            // Находим самый большой сегмент на нижней строке (его корень)
             Versh ground = FindLargeSegment(_height - 1);
             int pixelRow = 0;
             int pixelColumn = 0;
@@ -54,13 +58,14 @@ namespace CurseWork_2D3D
                     break;
                 }
             }
-            //формируем границу земли
+            // Формируем границу земли
             currentArea.Borders = FindBorder(pixelRow, pixelColumn);
-            //формируем всю область земли
+            // Формируем всю область земли
             FormSingleArea(pixelRow, pixelColumn);
-            //добавляем землю в список областей - у неё будет индекс 0
+            // Добавляем землю в список областей - у неё будет индекс 0
             result.Add(currentArea);
-            //потом найдём небо
+            
+            // Потом найдём небо
             currentArea = new AreaContainer();
             Versh sky = FindLargeSegment(0);
             pixelRow = 0;
@@ -74,13 +79,14 @@ namespace CurseWork_2D3D
                     break;
                 }
             }
-            //формируем границу неба
+            // Формируем границу неба
             currentArea.Borders = FindBorder(pixelRow, pixelColumn);
-            //формируем всю область неба
+            // Формируем всю область неба
             FormSingleArea(pixelRow, pixelColumn);
-            //добавляем небо в список областей - у него будет индекс 1
+            // Добавляем небо в список областей - у него будет индекс 1
             result.Add(currentArea);
-            //а теперь, дамы и господа, добавляем всё остальное
+            
+            // А теперь, дамы и господа, добавляем всё остальное
             for (int row = 0; row < _height; row++)
             {
                 for (int column = 0; column < _width; column++)
@@ -90,6 +96,7 @@ namespace CurseWork_2D3D
                     {
                         continue;
                     }
+                    // Чтобы избавиться от багов и мелких отростков пикселей
                     int svoi = 0;
                     for (int i = -1; i <= 1; i++)
                     {
@@ -101,11 +108,14 @@ namespace CurseWork_2D3D
                                 svoi++;
                         }
                     }
-                    if (svoi < 4)
+                    if (svoi < 5)
                         continue;
                     currentArea = new AreaContainer();
+                    // Ищет граничные пиксели
                     currentArea.Borders = FindBorder(row, column);
+                    // Ищет все пиксели области
                     FormSingleArea(row, column);
+                    // Добавляет в лист листов, где границы всех областей
                     result.Add(currentArea);
                 }
             }

@@ -48,6 +48,7 @@ namespace CurseWork_2D3D
             srWidth = _width / 2;
         }
 
+
         private float rtri = 0;
         Texture texture = new Texture();
         
@@ -67,7 +68,7 @@ namespace CurseWork_2D3D
             glWind.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT); // чистим цвета и глубины
             glWind.LoadIdentity(); // сброс системы координат к начальной позиции
 
-            glWind.Translate(0.0f, 0.0f, -5.0f); // по сути двигаем перо, которым рисуем (f - float)
+            glWind.Translate(0.0f, -0.5f, -3.0f); // по сути двигаем перо, которым рисуем (f - float)
             glWind.Rotate(rtri, 0, 1, 0); // вращение системы координат (угол поворота, координаты вектора вращения)
 
 //            texture.Bind(glWind);
@@ -129,7 +130,9 @@ namespace CurseWork_2D3D
 
                 if (haveData == false)
                 {
+                    // Преобразованные пиксели в вершины для рисования
                     _drawingVertices = new DrawingVertex[_height, _width];
+                    // Получим лист листов с границами всех областей
                     areaContainers = analizator.FormAreas();
                     haveData = true;
                 }
@@ -158,24 +161,26 @@ namespace CurseWork_2D3D
 
         public void MakePolygons(List<AreaContainer> areas, OpenGL glWind)
         {
-            float earthYcoef = 1f;
-            float earthZcoef = 1f;
-            float groundShift = 0;
+         // float earthYcoef = 1f; 
+         // float earthZcoef = 1f;
+         // float groundShift = 0;
             float farthestZ = 1;
-            //areas[0] - земля, areas[1] - небо
-            //сначала преобразуем землю
+            float sdvig = -0.5f;
+            // areas[0] - земля, areas[1] - небо
+            // Сначала преобразуем землю
             glWind.Begin(OpenGL.GL_POLYGON);
             texture.Bind(glWind);
-            glWind.Color(1.0f, 1.0f, 1.0f); // задаём цвет в RGB
+            glWind.Color(1.0f, 1.0f, 1.0f); // Задаём цвет в RGB
+            // Отрисовываем землю
             foreach (Versh versh in areas[0].Borders)
             {
                 if (_drawingVertices[versh._row, versh._column] == null)
                 {
                     DrawingVertex drawingVertex = new DrawingVertex();
-                    drawingVertex.x = (float)versh._column / _width-1;
-                    drawingVertex.y = ((float)_height - versh._row) / _height * earthYcoef;
-                    drawingVertex.z = ((float)versh._row - _height) / _height * earthZcoef;
-                    drawingVertex.textx = drawingVertex.textx;
+                    drawingVertex.x = (float)versh._column / _width + sdvig;
+                    drawingVertex.y = ((float) _height - versh._row)/_height; //* earthYcoef;
+                    drawingVertex.z = ((float) versh._row - _height)/_height; //* earthZcoef;
+                    drawingVertex.textx = (float) versh._column/_width;
                     drawingVertex.texty = ((float) _height - versh._row)/_height;
                     _drawingVertices[versh._row, versh._column] = drawingVertex;
                 }
@@ -203,7 +208,7 @@ namespace CurseWork_2D3D
                 if (_drawingVertices[versh._row, versh._column] == null)
                 {
                     if (minRow == _height) //ищем координаты Верша, соответствующего самой высокой границе ОБЛАСТИ (не сегмента) земли
-                    {
+                    { //сравнение стоит,чтобы не считать заново для каждой вершины небы
                         foreach (Versh groundVersh in areas[0].Borders)
                         {
                             if (groundVersh._row < minRow)
@@ -213,14 +218,9 @@ namespace CurseWork_2D3D
                             }
                         }
                     }
-                    //высота самой высокой сплющенной земли
-                    float newGroundY = _drawingVertices[minRow, minColumn].y;
-                    //высота самой высокой НЕсплющенной земли
-                    float originalGroundY = _drawingVertices[minRow, minColumn].y * (1/earthYcoef);
-                    groundShift = originalGroundY - newGroundY;
                     //из этих двух высот получаем величину смещения, чтобы приклеить небо к сплющенной земле
                     DrawingVertex drawingVertex = new DrawingVertex();
-                    drawingVertex.x = (float) versh._column/_width-1;
+                    drawingVertex.x = (float) versh._column/_width+sdvig;
                     drawingVertex.y = ((float) _height - versh._row)/_height;
                     drawingVertex.z = _drawingVertices[minRow, minColumn].z;
                     //drawingVertex.y -= Math.Abs(groundShift*(drawingVertex.z/farthestZ));
@@ -250,9 +250,8 @@ namespace CurseWork_2D3D
                         _drawingVertices[versh._row, versh._column].x = float.PositiveInfinity; //этим мы показываем, что вертекс ещё не обработали
                 }
             }
-            //а теперь мы идём по картнке снизу вверх и клеим все области к земле или областям под ними
+            //а теперь мы идём по картинке снизу вверх и клеим все области к земле или областям под ними
             //сначала пройдём по самой нижней строке, потому что она крепится не к земле, а ставится с z=0
-            int a1 = 2;
             for (int column = 0; column < _width; column++)
             {
                 int row = _height - 1;
@@ -260,7 +259,7 @@ namespace CurseWork_2D3D
                 if (lowerDrawingVertex == null || double.IsPositiveInfinity(lowerDrawingVertex.x) == false)
                     continue;
 
-                lowerDrawingVertex.x = (float) column/_width - 1;
+                lowerDrawingVertex.x = (float) column/_width + sdvig;
                 lowerDrawingVertex.y = 0;
                 lowerDrawingVertex.z = 0;
 
@@ -275,10 +274,10 @@ namespace CurseWork_2D3D
                         foreach (Versh versh in borders)
                         {
                             DrawingVertex drawingVertex = _drawingVertices[versh._row, versh._column];
-                            drawingVertex.x = (float) versh._column/_width - 1;
-                            drawingVertex.y = ((float) _height - versh._row)/_height - groundShift*((float) (_height - minRow)/_height);
+                            drawingVertex.x = (float) versh._column/_width +sdvig;
+                            drawingVertex.y = ((float) _height - versh._row)/_height; //- groundShift*((float) (_height - minRow)/_height);
                             drawingVertex.z = 0;
-                            drawingVertex.y -= Math.Abs(groundShift * (drawingVertex.z / farthestZ));
+                            //drawingVertex.y -= Math.Abs(groundShift * (drawingVertex.z / farthestZ));
 
                             drawingVertex.textx = (float) versh._column/_width;
                             drawingVertex.texty = ((float) _height - versh._row)/_height;
@@ -286,7 +285,6 @@ namespace CurseWork_2D3D
                     }
                 }
             }
-            int a = 2;
             for (int row = _height - 2; row >= 0; row--)
             {
                 for (int column = 0; column < _width; column++)
@@ -294,7 +292,7 @@ namespace CurseWork_2D3D
                     DrawingVertex drawingVertex = _drawingVertices[row, column];
                     if (_drawingVertices[row, column] == null || double.IsPositiveInfinity(drawingVertex.x) == false)
                         continue;
-
+                    //теперь мы знаем, что вертекс существует, н не был обработан
                     //находим границу вершей, в котором лежит текущий
                     List<Versh> border = null;
                     foreach (AreaContainer area in areas)
@@ -317,11 +315,11 @@ namespace CurseWork_2D3D
                             foreach (Versh versh in border)
                             {
                                 drawingVertex = _drawingVertices[versh._row, versh._column];
-                                drawingVertex.x = (float) versh._column/_width - 1;
-                                drawingVertex.y = ((float) _height - versh._row)/_height -
-                                                  groundShift*((float) (_height - minRow)/_height);
+                                drawingVertex.x = (float) versh._column/_width + sdvig;
+                                drawingVertex.y = ((float) _height - versh._row)/_height; 
+                                                //  groundShift*((float) (_height - minRow)/_height);
                                 drawingVertex.z = _drawingVertices[row, column + step].z;
-                                drawingVertex.y -= Math.Abs(groundShift * (drawingVertex.z / farthestZ));
+                                //drawingVertex.y -= Math.Abs(groundShift * (drawingVertex.z / farthestZ));
 
                                 drawingVertex.textx = (float) versh._column/_width;
                                 drawingVertex.texty = ((float) _height - versh._row)/_height;
@@ -329,7 +327,6 @@ namespace CurseWork_2D3D
                         }
                 }
             }
-            int a3 = 2;
             for (int i = 2; i < areas.Count; i++)
             {
                 glWind.Begin(OpenGL.GL_POLYGON);
@@ -350,6 +347,7 @@ namespace CurseWork_2D3D
             }
         }
 
+        // Старая версия
         public void Set3DPolygon(List<Versh> borderList, OpenGL glWind)
         {
             glWind.Begin(OpenGL.GL_POLYGON); // начинаем отрисовывать

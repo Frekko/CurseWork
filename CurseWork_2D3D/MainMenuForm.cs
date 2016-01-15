@@ -19,7 +19,6 @@ namespace CurseWork_2D3D
         private bool loadedIt = false;
         private bool madeIt = false;
         private string fileName;
-
         public static double _trueSegmLimit;
         public static int _trueRangeLimit;
         public static int _trueSegmSize;
@@ -38,6 +37,8 @@ namespace CurseWork_2D3D
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (loadedIt == true)
+                return;
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
 
             openFileDialog1.InitialDirectory = "C:\\Users\\SONY\\Documents\\Visual Studio 2013\\Projects\\2D3D\\2D3D\\bin\\Debug";
@@ -85,6 +86,10 @@ namespace CurseWork_2D3D
 
         private void button3_Click(object sender, EventArgs e)
         {
+//            // глупая защита
+//            if (Analizator.iStarted)
+//                return;
+//            Analizator.iStarted = true;
             if (loadedIt == true)
             {
                 if (madeIt == false)
